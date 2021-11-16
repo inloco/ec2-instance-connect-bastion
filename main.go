@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log"
+	"os"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -13,7 +14,31 @@ import (
 	xssh "golang.org/x/crypto/ssh"
 )
 
+func newSignerFromFile(sshHostKeyPath string) (xssh.Signer, error) {
+	sshHostKey, err := os.ReadFile(sshHostKeyPath)
+	if err != nil {
+		return nil, err
+	}
+
+	signer, err := xssh.ParsePrivateKey(sshHostKey)
+	if err != nil {
+		return nil, err
+	}
+
+	return signer, nil
+}
+
 func main() {
+	var hostSigners []ssh.Signer
+	if len(os.Args) == 2 {
+		signer, err := newSignerFromFile(os.Args[1])
+		if err != nil {
+			log.Fatalln(err)
+		}
+
+		hostSigners = append(hostSigners, signer)
+	}
+
 	awsConfig, err := config.LoadDefaultConfig(context.Background())
 	if err != nil {
 		log.Panic(err)
@@ -27,6 +52,7 @@ func main() {
 		Handler: func(session ssh.Session) {
 			log.Printf("Handler(%v)\n", session)
 		},
+		HostSigners: hostSigners,
 		PublicKeyHandler: func(ctx ssh.Context, key ssh.PublicKey) bool {
 			log.Printf("PublicKeyHandler(_, %v)\n", key)
 			return true
