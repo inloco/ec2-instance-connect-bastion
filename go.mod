@@ -21,5 +21,5 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sts v1.8.0 // indirect
 	github.com/aws/smithy-go v1.8.1 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
-	golang.org/x/sys v0.0.0-20210616094352-59db8d763f22 // indirect
+	golang.org/x/sys v0.1.0 // indirect
 )
